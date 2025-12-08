@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FamilyMember, Transaction, ThemeColor } from '../types';
 import { Button } from './Button';
 import { Trash2, Plus, UserPlus, Palette, Check } from 'lucide-react';
+import { generateUUID } from '../utils/dateUtils';
 
 interface Props {
   members: FamilyMember[];

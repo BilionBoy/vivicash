@@ -8,7 +8,7 @@ import { Reports } from './components/Reports';
 import { Wallets } from './components/Wallets';
 import { Settings } from './components/Settings';
 import { Button } from './components/Button';
-import { formatDate } from './utils/dateUtils';
+import { formatDate, generateUUID } from './utils/dateUtils';
 
 // Dynamic Theme Logo
 const VivicashLogo = ({ className = "w-8 h-8", textSize = "text-xl", dark = false, theme = 'amber' }: { className?: string, textSize?: string, dark?: boolean, theme?: ThemeColor }) => {
@@ -36,9 +36,11 @@ const VivicashLogo = ({ className = "w-8 h-8", textSize = "text-xl", dark = fals
   );
 }
 
+type TabType = 'dashboard' | 'transactions' | 'reports' | 'wallets' | 'settings';
+
 // Main App Component
 const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'transactions' | 'reports' | 'wallets' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const [state, setState] = useState<FinancialState>({ transactions: [], members: [], themeColor: 'amber' });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -47,8 +49,12 @@ const App: React.FC = () => {
 
   // Load data on mount
   useEffect(() => {
-    const data = loadState();
-    setState(data);
+    try {
+      const data = loadState();
+      setState(data);
+    } catch (e) {
+      console.error("Critical error loading state:", e);
+    }
   }, []);
 
   // Save data on change
@@ -77,7 +83,7 @@ const App: React.FC = () => {
       // Create new
       const newTransaction: Transaction = {
         ...transactionData,
-        id: crypto.randomUUID(),
+        id: generateUUID(),
       };
       setState(prev => ({ ...prev, transactions: [newTransaction, ...prev.transactions] }));
     }
@@ -93,7 +99,7 @@ const App: React.FC = () => {
   const handleAddMember = (member: Omit<FamilyMember, 'id' | 'monthlyBudget'>) => {
     const newMember: FamilyMember = {
       ...member,
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       monthlyBudget: 0
     };
     setState(prev => ({ ...prev, members: [...prev.members, newMember] }));
@@ -209,7 +215,7 @@ const App: React.FC = () => {
             return (
               <button
                 key={item.id}
-                onClick={() => { setActiveTab(item.id as any); setIsSidebarOpen(false); }}
+                onClick={() => { setActiveTab(item.id as TabType); setIsSidebarOpen(false); }}
                 className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 font-medium group relative overflow-hidden ${
                   isActive 
                     ? `text-white shadow-lg ${getActiveTabClass()}` 
