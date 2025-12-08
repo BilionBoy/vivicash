@@ -1,0 +1,5 @@
+{
+  "name": "VIVICASH",
+  "description": "Um sistema completo de gestão financeira familiar com suporte a PWA, análise de IA, relatórios em PDF e controle de despesas por membro.",
+  "requestFramePermissions": []
+}
