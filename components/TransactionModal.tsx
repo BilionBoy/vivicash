@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Transaction, TransactionType, Category, FamilyMember } from '../types';
 import { X, Calendar, DollarSign, Tag, User, Clock, ArrowDownCircle, ArrowUpCircle, TrendingUp, Check, AlertCircle, Wallet } from 'lucide-react';
+import { getTodayString } from '../utils/dateUtils';
 
 interface Props {
   isOpen: boolean;
@@ -15,8 +16,8 @@ export const TransactionModal: React.FC<Props> = ({ isOpen, onClose, onSave, mem
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<string>(Category.FOOD);
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [dueDate, setDueDate] = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(getTodayString());
+  const [dueDate, setDueDate] = useState(getTodayString());
   const [memberId, setMemberId] = useState('');
   const [isPaid, setIsPaid] = useState(true);
 
@@ -30,7 +31,7 @@ export const TransactionModal: React.FC<Props> = ({ isOpen, onClose, onSave, mem
         setDescription(initialData.description);
         setCategory(initialData.category);
         setDate(initialData.date.split('T')[0]);
-        setDueDate(initialData.dueDate ? initialData.dueDate.split('T')[0] : new Date().toISOString().split('T')[0]);
+        setDueDate(initialData.dueDate ? initialData.dueDate.split('T')[0] : getTodayString());
         setMemberId(initialData.memberId);
         setIsPaid(initialData.isPaid);
       } else {
@@ -39,7 +40,7 @@ export const TransactionModal: React.FC<Props> = ({ isOpen, onClose, onSave, mem
         setAmount('');
         setDescription('');
         setCategory(Category.FOOD);
-        const today = new Date().toISOString().split('T')[0];
+        const today = getTodayString();
         setDate(today);
         setDueDate(today);
         setMemberId(members[0]?.id || '');

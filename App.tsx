@@ -8,6 +8,7 @@ import { Reports } from './components/Reports';
 import { Wallets } from './components/Wallets';
 import { Settings } from './components/Settings';
 import { Button } from './components/Button';
+import { formatDate } from './utils/dateUtils';
 
 // Dynamic Theme Logo
 const VivicashLogo = ({ className = "w-8 h-8", textSize = "text-xl", dark = false, theme = 'amber' }: { className?: string, textSize?: string, dark?: boolean, theme?: ThemeColor }) => {
@@ -358,7 +359,7 @@ const App: React.FC = () => {
                          <Edit2 size={14} className="text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity transform group-hover:translate-x-1" />
                       </div>
                       <div className="flex flex-wrap gap-2 text-xs font-medium text-slate-500 items-center">
-                        <span className="bg-slate-100 px-2 py-0.5 rounded-md">{new Date(t.date).toLocaleDateString('pt-BR')}</span>
+                        <span className="bg-slate-100 px-2 py-0.5 rounded-md">{formatDate(t.date)}</span>
                         <span className="w-1 h-1 rounded-full bg-slate-300"></span>
                         <span className="text-slate-600">{t.category}</span>
                         <span className="w-1 h-1 rounded-full bg-slate-300"></span>

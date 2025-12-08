@@ -4,6 +4,7 @@ import { Button } from './Button';
 import { FileDown, Users, TrendingUp, BarChart3, AlertCircle, CheckCircle2 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, CartesianGrid, Cell, Brush } from 'recharts';
+import { formatDate } from '../utils/dateUtils';
 
 interface Props {
   transactions: Transaction[];
@@ -14,8 +15,10 @@ export const Reports: React.FC<Props> = ({ transactions, members }) => {
   
   const monthlyData = useMemo(() => {
     const history = transactions.reduce((acc, t) => {
-      const date = new Date(t.date);
-      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      // Create key from string directly to avoid timezone issues
+      // t.date format is YYYY-MM-DD
+      const parts = t.date.split('-');
+      const key = `${parts[0]}-${parts[1]}`;
       
       if (!acc[key]) {
         acc[key] = { date: key, Receitas: 0, Despesas: 0 };
@@ -34,8 +37,9 @@ export const Reports: React.FC<Props> = ({ transactions, members }) => {
       .sort((a, b) => a.date.localeCompare(b.date))
       .map(item => {
         const [year, month] = item.date.split('-');
-        const displayDate = new Date(parseInt(year), parseInt(month) - 1)
-          .toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
+        // Construct display date safely
+        const dateObj = new Date(parseInt(year), parseInt(month) - 1);
+        const displayDate = dateObj.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' });
         return {
           name: displayDate,
           Receitas: item.Receitas,
@@ -57,9 +61,10 @@ export const Reports: React.FC<Props> = ({ transactions, members }) => {
     return transactions
       .filter(t => t.type === 'expense' && !t.isPaid)
       .sort((a, b) => {
-        const dateA = a.dueDate ? new Date(a.dueDate).getTime() : new Date(a.date).getTime();
-        const dateB = b.dueDate ? new Date(b.dueDate).getTime() : new Date(b.date).getTime();
-        return dateA - dateB;
+        // Safe string comparison for YYYY-MM-DD works
+        const dateA = a.dueDate || a.date;
+        const dateB = b.dueDate || b.date;
+        return dateA.localeCompare(dateB);
       });
   }, [transactions]);
 
@@ -139,7 +144,7 @@ export const Reports: React.FC<Props> = ({ transactions, members }) => {
       doc.setFont("helvetica", "normal");
       unpaidExpenses.forEach((t) => {
         if (yPos > 280) { doc.addPage(); yPos = 20; }
-        const dueDateStr = t.dueDate ? new Date(t.dueDate).toLocaleDateString('pt-BR') : '-';
+        const dueDateStr = formatDate(t.dueDate || '');
         doc.text(dueDateStr, 16, yPos);
         doc.text(t.description.substring(0, 40), 50, yPos);
         doc.text(`R$ ${t.amount.toFixed(2)}`, 170, yPos);
@@ -162,14 +167,15 @@ export const Reports: React.FC<Props> = ({ transactions, members }) => {
     doc.text("ÚLTIMOS LANÇAMENTOS", 16, yPos + 2);
     
     yPos += 15;
-    const recent = [...transactions].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 20);
+    // Sort safely using strings
+    const recent = [...transactions].sort((a,b) => b.date.localeCompare(a.date)).slice(0, 20);
     
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
     
     recent.forEach((t) => {
       if (yPos > 280) { doc.addPage(); yPos = 20; }
-      const dateStr = new Date(t.date).toLocaleDateString('pt-BR');
+      const dateStr = formatDate(t.date);
       const amountStr = `R$ ${t.amount.toFixed(2)}`;
       
       doc.text(dateStr, 16, yPos);
@@ -231,7 +237,7 @@ export const Reports: React.FC<Props> = ({ transactions, members }) => {
                 {unpaidExpenses.map((t) => (
                   <tr key={t.id} className="hover:bg-rose-50/20 transition-colors">
                     <td className="px-6 py-4 font-bold text-rose-600 whitespace-nowrap">
-                      {t.dueDate ? new Date(t.dueDate).toLocaleDateString('pt-BR') : 'Indefinido'}
+                      {formatDate(t.dueDate || '')}
                     </td>
                     <td className="px-6 py-4 font-medium text-slate-800">{t.description}</td>
                     <td className="px-6 py-4 text-slate-500">

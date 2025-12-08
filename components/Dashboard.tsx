@@ -12,6 +12,7 @@ import {
   Calendar
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
+import { formatDate, getTodayString } from '../utils/dateUtils';
 
 interface Props {
   transactions: Transaction[];
@@ -34,7 +35,7 @@ export const Dashboard: React.FC<Props> = ({ transactions, members, themeColor }
     // Balance only subtracts PAID expenses
     const balance = income - paidExpense - investment;
     
-    const today = new Date().toISOString().split('T')[0];
+    const today = getTodayString();
     const upcoming = transactions.filter(t => t.type === 'expense' && !t.isPaid && t.dueDate && t.dueDate >= today).length;
 
     return { income, expense: totalExpense, investment, balance, upcoming };
@@ -45,8 +46,8 @@ export const Dashboard: React.FC<Props> = ({ transactions, members, themeColor }
     const nextWeek = new Date();
     nextWeek.setDate(today.getDate() + 7);
     
-    const todayStr = today.toISOString().split('T')[0];
-    const nextWeekStr = nextWeek.toISOString().split('T')[0];
+    const todayStr = getTodayString();
+    const nextWeekStr = nextWeek.toISOString().split('T')[0]; // ISO is fine for comparison here as long as we compare YYYY-MM-DD
 
     return transactions.filter(t => {
       if (t.type !== 'expense' || t.isPaid || !t.dueDate) return false;
@@ -263,7 +264,7 @@ export const Dashboard: React.FC<Props> = ({ transactions, members, themeColor }
                         <p className={`font-bold text-sm truncate ${isLate ? 'text-rose-700' : 'text-slate-700'}`}>{t.description}</p>
                         <p className={`text-xs font-medium ${isLate ? 'text-rose-500' : 'text-slate-400'}`}>
                           {isLate ? 'Vencida: ' : 'Vence: '} 
-                          {t.dueDate ? new Date(t.dueDate).toLocaleDateString('pt-BR').slice(0, 5) : 'S/D'}
+                          {t.dueDate ? formatDate(t.dueDate) : 'S/D'}
                         </p>
                       </div>
                       <div className="text-right">
